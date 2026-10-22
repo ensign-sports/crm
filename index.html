@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ensign CRM</title>
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ensign CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#ffffff">
+<style>html,body{margin:0;height:100%;background:#fff;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top);box-sizing:border-box}
+#bar{display:none;align-items:center;gap:10px;padding:10px 14px;background:#1f1f1e;color:#fff;font-size:14px;line-height:1.3}
+#bar span{flex:1}#bar button{border:0;border-radius:18px;padding:8px 14px;font:inherit;font-weight:600;background:#fff;color:#1f1f1e;cursor:pointer}
+#bar .x{background:transparent;color:#fff;padding:6px 8px}iframe{flex:1;border:0;width:100%;display:block}</style></head>
+<body><div id="bar" role="status"><span id="barText"></span><button id="barGo" type="button">Turn on notifications</button><button class="x" id="barX" type="button" aria-label="Not now">✕</button></div>
+<iframe id="crm" src="https://script.google.com/macros/s/AKfycbxxeoUQe5BIhqmhnuFxvudsuDJRfrvufRLAQ2HkU2pKUuQGWByQl_uOQUDaa4FpOOlsdA/exec" title="Ensign CRM" allow="clipboard-write; clipboard-read"></iframe>
+<script type="module" src="app.js"></script></body></html>
