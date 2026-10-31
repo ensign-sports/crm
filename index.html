@@ -5,11 +5,35 @@
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ensign CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#ffffff">
-<style>html,body{margin:0;height:100%;background:#fff;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif}
-body{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top);box-sizing:border-box}
-#bar{display:none;align-items:center;gap:10px;padding:10px 14px;background:#1f1f1e;color:#fff;font-size:14px;line-height:1.3}
-#bar span{flex:1}#bar button{border:0;border-radius:18px;padding:8px 14px;font:inherit;font-weight:600;background:#fff;color:#1f1f1e;cursor:pointer}
-#bar .x{background:transparent;color:#fff;padding:6px 8px}iframe{flex:1;border:0;width:100%;display:block}</style></head>
-<body><div id="bar" role="status"><span id="barText"></span><button id="barGo" type="button">Turn on notifications</button><button class="x" id="barX" type="button" aria-label="Not now">✕</button></div>
-<iframe id="crm" src="https://script.google.com/macros/s/AKfycbxxeoUQe5BIhqmhnuFxvudsuDJRfrvufRLAQ2HkU2pKUuQGWByQl_uOQUDaa4FpOOlsdA/exec" title="Ensign CRM" allow="clipboard-write; clipboard-read"></iframe>
-<script type="module" src="app.js"></script></body></html>
+<style>html,body{margin:0;height:100%;background:#f4f2ee;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;color:#555}
+#boot{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-size:15px;text-align:center;padding:24px;box-sizing:border-box}
+#boot img{width:64px;height:64px;border-radius:16px}#boot button{border:0;border-radius:18px;padding:9px 16px;font:inherit;background:#1f1f1e;color:#fff}</style></head>
+<body><div id="boot"><img src="icon-192.png" alt=""><span id="bootText">Opening Ensign CRM…</span></div>
+<script>
+/* Opens the CRM's screens saved on this phone straight away (no Google page around them), then gets data from the CRM.
+   The first time, the screens are downloaded from the CRM; after that the CRM checks for a newer version each time it opens. */
+(function () {
+  var API = 'https://script.google.com/macros/s/AKfycbxxeoUQe5BIhqmhnuFxvudsuDJRfrvufRLAQ2HkU2pKUuQGWByQl_uOQUDaa4FpOOlsdA/exec', NAME = 'crm-screens';
+  function open(text) {
+    var m = /^<!--v:([\w-]+)-->/.exec(text), html = m ? text.slice(m[0].length) : text;
+    try { localStorage.setItem('crm_ui_ver', m ? m[1] : ''); } catch (e) {}
+    var boot = '<script>window.CRM_API=' + JSON.stringify(API) + ';window.CRM_SHELL=1;<\/script>';
+    var bar = '<div id="bar" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:200;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#1f1f1e;color:#fff;font:14px/1.3 -apple-system,system-ui,sans-serif">' +
+      '<span id="barText" style="flex:1"></span><button id="barGo" type="button" style="border:0;border-radius:18px;padding:8px 14px;font:inherit;font-weight:600;background:#fff;color:#1f1f1e">Turn on notifications</button>' +
+      '<button id="barX" type="button" aria-label="Not now" style="border:0;background:transparent;color:#fff;font:inherit;padding:6px 8px">✕</button></div><script type="module" src="app.js"><\/script>';
+    var h = html.search(/<head>/i) + 6, e = html.toLowerCase().lastIndexOf('</body>');   // the page's own head and its real end (the CRM's email templates contain </body> too)
+    html = html.slice(0, h) + boot + '<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png">' + html.slice(h, e) + bar + html.slice(e);
+    document.open(); document.write(html); document.close();
+  }
+  function fail() { document.getElementById('bootText').innerHTML = 'Couldn\'t open the CRM. Check the internet connection.<br><br><button onclick="location.reload()">Try again</button>'; }
+  function download() {
+    return fetch(API + '?ui=1', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (t) {
+      if (!/^<!--v:/.test(t)) throw new Error('not the CRM');
+      if (window.caches) caches.open(NAME).then(function (c) { c.put('ui', new Response(t)); }).catch(function () {});
+      return t;
+    });
+  }
+  (window.caches ? caches.open(NAME).then(function (c) { return c.match('ui'); }).then(function (r) { return r ? r.text() : download(); }) : download())
+    .then(open).catch(function () { download().then(open).catch(fail); });
+})();
+</script></body></html>

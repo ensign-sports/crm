@@ -33,10 +33,12 @@ async function start() {
 window.addEventListener('message', e => {
   const d = e.data; let host = '';
   try { host = new URL(e.origin).hostname; } catch (x) { return; }
-  if (!d || d.ensignCrm !== 1 || !/(^|\.)googleusercontent\.com$/.test(host)) return;   // only the CRM's own page
+  if (!d || d.ensignCrm !== 1 || !(e.origin === location.origin || /(^|\.)googleusercontent\.com$/.test(host))) return;   // only the CRM itself
   crm = e.source; crmOrigin = e.origin;
   if (d.type === 'hello') { tell({ type: 'state', perm: perm(), standalone: standalone }); if (token) tell({ type: 'token', token: token, device: device() }); }
   if (d.type === 'badge' && 'setAppBadge' in navigator) { const n = Number(d.n) || 0; (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {}); }
   if (d.type === 'ask' && perm() === 'default') show('Get a notification when follow-ups are due.', true);
 });
-start();
+// the CRM's screens now run in this same page: talk to it directly (an older app showed it in a frame)
+if (window.CRM_SHELL) { crm = window; crmOrigin = location.origin; }
+start().then(() => { if (window.CRM_SHELL) tell({ type: 'state', perm: perm(), standalone: standalone }); });
